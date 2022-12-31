@@ -56,7 +56,13 @@ def get_symbol_list(FILENAME, column):
 #engine=sqlalchemy.create_engine('mssql+pymssql://adminlogin:TjmnhdMySQL1!@pwdatabase-p1.database.windows.net:'
 #                                '1433/databasePW')
 
-def get_all_data():
+def get_all_data(to_csv=True, csv_mode='a', to_database=False, data_base_mode='a'):
+    """ pobiera cały zestaw danych ze stooq
+    to_csv - True(domyślnie)/False - zapis do pliku csv
+    csv_mode - a= append (domyślnie), w=overwrite
+    to_database_ True/False(domyślnie) - zapis do bazy danych
+    data_base_mode - a= append(domyślnie), w=overwrite"""
+
     if os.path.exists('kursy.csv'):
         os.remove('kursy.csv')
 
@@ -73,12 +79,15 @@ def get_all_data():
         base_data_frame=pd.DataFrame()
         base_data_frame=get_Quotes(NAZWA_K, DataSET)
         base_data_frame=add_BollingerBand(base_data_frame,'Zamkniecie')
-        base_data_frame.to_csv("kursy.csv", mode='a', encoding="utf-8")
+        if to_csv:
+            base_data_frame.to_csv("kursy.csv", mode=csv_mode, encoding="utf-8")
         #działa połączenie do bazy
-        #engine=sqlalchemy.create_engine('mssql+pymssql://adminuser:TjmnhdMySQL1!@pwserver2.database.windows.net:'
-        #                                '1433/PWdatabase')
-        #działa - zapis do bazy
-        #base_data_frame.to_sql('notowaniaGPW',if_exists='append', con=engine)
+
+        if to_database:
+            engine=sqlalchemy.create_engine('mssql+pymssql://adminuser:TjmnhdMySQL1!@pwserver2.database.windows.net:'
+                                            '1433/PWdatabase')
+            #działa - zapis do bazy
+            base_data_frame.to_sql('notowaniaGPW',if_exists='append', con=engine)
 
     print('Base data frame')
     print(base_data_frame)
@@ -92,3 +101,4 @@ def plot_bollinger(base_data_frame, WALOR):
     ax.grid()
     plt.show(block=True)
 
+get_all_data(to_csv=True, csv_mode='w')
