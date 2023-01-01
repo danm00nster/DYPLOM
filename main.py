@@ -27,10 +27,12 @@ def add_BollingerBand(inputDataFrame: pd.DataFrame, dataColumn):
 
     return outputDataFrame
 
-def get_Quotes(symbol, DataSET):
+def get_Quotes(symbol, DateSET):
     FILENAME = symbol + ".txt"
     output_data_frame = pd.DataFrame()
-    for START_DATE, END_DATE in DataSET:
+    print(DateSET)
+    for START_DATE, END_DATE in DateSET:
+        print(f'>{START_DATE}< >{END_DATE}<')
         if os.path.exists(FILENAME):
             os.remove(FILENAME)
         url = "https://stooq.pl/q/d/l/?s={0}&d1={1}&d2={2}&i=d".format(symbol, START_DATE.replace("-", ""),
@@ -45,7 +47,7 @@ def get_Quotes(symbol, DataSET):
             else:
                 output_data_frame = pd.concat([output_data_frame, DF_notowania])
         except:
-            print("brak danych za okres ",symbol, START_DATE)
+            print("brak danych za okres ",symbol, START_DATE, END_DATE)
             output_data_frame=pd.DataFrame()
     return output_data_frame
 
@@ -59,28 +61,30 @@ def get_symbol_list(FILENAME, column):
 #engine=sqlalchemy.create_engine('mssql+pymssql://adminlogin:TjmnhdMySQL1!@pwdatabase-p1.database.windows.net:'
 #                                '1433/databasePW')
 
-def get_all_stooq(to_csv=True, csv_mode='a', to_database=False, data_base_mode='append'):
+def get_all_stooq(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base_mode='append' ):
     """ pobiera cały zestaw danych ze stooq
     to_csv - True(domyślnie)/False - zapis do pliku csv
     csv_mode - a= append (domyślnie), w=overwrite
     to_database_ True/False(domyślnie) - zapis do bazy danych
-    data_base_mode - opcje dataframe.to_sql append= wstawia wiersze(domyślnie), replace=drop table przed zapisem do bazy"""
+    data_base_mode - opcje dataframe.to_sql append= wstawia wiersze(domyślnie), replace=drop table przed zapisem do bazy
+    DateSET - zestaw dat start, end"""
 
     if os.path.exists('kursy.csv'):
         os.remove('kursy.csv')
 
-    DataSET = [['2018-01-01', '2018-12-31'],
-               ['2019-01-01', '2019-12-31'],
-               ['2020-01-01', '2020-12-31'],
-               ['2021-01-01', '2021-12-31'],
-               ['2022-01-01', '2022-12-30']]
+    #DateSET = [['2018-01-01', '2018-12-31'],
+    #           ['2019-01-01', '2019-12-31'],
+    #           ['2020-01-01', '2020-12-31'],
+    #           ['2021-01-01', '2021-12-31'],
+    #           ['2022-01-01', '2022-12-30']]
+
     NAZWA_K='Kurs'
     WALOR_LIST=get_symbol_list('gielda.csv','WALOR')
 
     for WALOR in WALOR_LIST:
         NAZWA_K = WALOR
         base_data_frame=pd.DataFrame()
-        base_data_frame=get_Quotes(NAZWA_K, DataSET)
+        base_data_frame=get_Quotes(NAZWA_K, DateSET)
         base_data_frame=add_BollingerBand(base_data_frame,'Zamkniecie')
         if to_csv:
             base_data_frame.to_csv("kursy.csv", mode=csv_mode, encoding="utf-8")
@@ -139,17 +143,17 @@ def get_data_range_of_GOLD(start_date,end_date):
         if response.status_code == 200:
             return json.dumps(response.json(), indent=4, sort_keys=True)
 
-def get_all_NBP(to_csv=True, csv_mode='a', to_database=False, data_base_mode='append'):
+def get_all_NBP(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base_mode='append'):
     dfCurrency = pd.DataFrame(columns=['effectiveDate', 'mid', 'no', 'code'])
     dfGOLD = pd.DataFrame(columns=['data', 'cena'])
     currencySET = ['USD', 'GBP', 'EUR', 'CHF']
-    DataSET = [['2018-01-01', '2018-12-31'],
-               ['2019-01-01', '2019-12-31'],
-               ['2020-01-01', '2020-12-31'],
-               ['2021-01-01', '2021-12-31'],
-               ['2022-01-01', '2022-12-12']]
-    print(DataSET)
-    for start, end in DataSET:
+    #DateSET = [['2018-01-01', '2018-12-31'],
+    #           ['2019-01-01', '2019-12-31'],
+    #           ['2020-01-01', '2020-12-31'],
+    #           ['2021-01-01', '2021-12-31'],
+    #           ['2022-01-01', '2022-12-12']]
+    print(DateSET)
+    for start, end in DateSET:
         print('dekodowanie', start, end, 'GOLD')
         jsonGOLD = json.loads(get_data_range_of_GOLD(start, end))
         for dGOLD in jsonGOLD:
@@ -158,7 +162,7 @@ def get_all_NBP(to_csv=True, csv_mode='a', to_database=False, data_base_mode='ap
             tmpGOLD = tmpGOLD.transpose()
             dfGOLD = pd.concat([dfGOLD, tmpGOLD])
     for currency in currencySET:
-        for start, end in DataSET:
+        for start, end in DateSET:
             jsonNBP = json.loads(get_data_range_of_currency(currency, start, end))
             print("dekodowanie", start, end, currency)
             Rrates = ((jsonNBP['rates']))
@@ -185,4 +189,14 @@ def get_all_NBP(to_csv=True, csv_mode='a', to_database=False, data_base_mode='ap
         dfGOLD.to_sql('GOLD', index=False, if_exists=data_base_mode, con=engine)
         dfCurrency.to_sql('Currency', index=False, if_exists=data_base_mode, con=engine)
 
-#get_all_stooq(to_csv=True, csv_mode='w')
+
+
+DateSET = [['2018-01-01', '2018-12-31'],
+           ['2019-01-01', '2019-12-31'],
+           ['2020-01-01', '2020-12-31'],
+           ['2021-01-01', '2021-12-31'],
+           ['2022-01-01', '2022-12-31']]
+
+#DateSET = [['2022-12-30', '2022-12-30']]
+
+get_all_stooq(DateSET, to_csv=True, csv_mode='w', to_database=True, data_base_mode='append')
