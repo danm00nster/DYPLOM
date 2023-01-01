@@ -57,9 +57,6 @@ def get_symbol_list(FILENAME, column):
     symbolList=DF_symbolList[column].to_list()
 
     return symbolList
-#działa połączenie do bazy
-#engine=sqlalchemy.create_engine('mssql+pymssql://adminlogin:TjmnhdMySQL1!@pwdatabase-p1.database.windows.net:'
-#                                '1433/databasePW')
 
 def get_all_stooq(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base_mode='append' ):
     """ pobiera cały zestaw danych ze stooq
@@ -68,10 +65,8 @@ def get_all_stooq(DateSET, to_csv=True, csv_mode='a', to_database=False, data_ba
     to_database_ True/False(domyślnie) - zapis do bazy danych
     data_base_mode - opcje dataframe.to_sql append= wstawia wiersze(domyślnie), replace=drop table przed zapisem do bazy
     DateSET - zestaw dat start, end"""
-
     if os.path.exists('kursy.csv'):
         os.remove('kursy.csv')
-
     #DateSET = [['2018-01-01', '2018-12-31'],
     #           ['2019-01-01', '2019-12-31'],
     #           ['2020-01-01', '2020-12-31'],
@@ -188,7 +183,6 @@ def get_all_NBP(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base
     # działa - zapis do bazy
         dfGOLD.to_sql('GOLD', index=False, if_exists=data_base_mode, con=engine)
         dfCurrency.to_sql('Currency', index=False, if_exists=data_base_mode, con=engine)
-
 
 
 DateSET = [['2018-01-01', '2018-12-31'],
