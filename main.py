@@ -77,12 +77,10 @@ def get_all_stooq(DateSET, to_csv=True, csv_mode='a', to_database=False, data_ba
         if to_csv:
             base_data_frame.to_csv("kursy.csv", mode=csv_mode, encoding="utf-8")
             csv_mode='a'
-        # działa połączenie do bazy
 
         if to_database:
             engine = sqlalchemy.create_engine('mssql+pymssql://adminuser:TjmnhdMySQL1!@pwserver2.database.windows.net:'
                                               '1433/PWdatabase')
-            # działa - zapis do bazy
             base_data_frame.to_sql('notowaniaGPW', if_exists=data_base_mode, con=engine)
             data_base_mode='append'
     print('Base data frame')
@@ -109,7 +107,7 @@ def get_data_range_of_currency(currency, start_date, end_date):
               f'{end_date}' \
               f'?format=json'
         response = requests.get(url)
-        # print(url)
+
     except HTTPError as http_error:
         print(f'HTTP error: {http_error}')
     except Exception as e:
@@ -170,11 +168,10 @@ def get_all_nbp(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base
         dfGOLD.to_csv("gold.csv", mode=csv_mode, encoding="utf-8")
         dfCurrency.to_csv("currency.csv", mode=csv_mode, encoding="utf-8")
         print("to_csv done")
-    # działa połączenie do bazy
+
     if to_database:
         engine = sqlalchemy.create_engine('mssql+pymssql://adminuser:TjmnhdMySQL1!@pwserver2.database.windows.net:'
                                           '1433/PWdatabase')
-        # działa - zapis do bazy
         dfGOLD.to_sql('GOLD', index=False, if_exists=data_base_mode, con=engine)
         dfCurrency.to_sql('Currency', index=False, if_exists=data_base_mode, con=engine)
 
