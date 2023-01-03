@@ -76,6 +76,7 @@ def get_all_stooq(DateSET, to_csv=True, csv_mode='a', to_database=False, data_ba
         base_data_frame = add_bollinger_band(base_data_frame, 'Zamkniecie')
         if to_csv:
             base_data_frame.to_csv("kursy.csv", mode=csv_mode, encoding="utf-8")
+            csv_mode='a'
         # działa połączenie do bazy
 
         if to_database:
@@ -83,7 +84,7 @@ def get_all_stooq(DateSET, to_csv=True, csv_mode='a', to_database=False, data_ba
                                               '1433/PWdatabase')
             # działa - zapis do bazy
             base_data_frame.to_sql('notowaniaGPW', if_exists=data_base_mode, con=engine)
-
+            data_base_mode='append'
     print('Base data frame')
     print(base_data_frame)
     print(base_data_frame.dtypes)
