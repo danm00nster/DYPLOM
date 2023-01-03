@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from pandas.io import sql
 import wget
 import os
 import sqlalchemy
@@ -9,8 +8,8 @@ import json
 from requests.exceptions import HTTPError
 
 
-def add_BollingerBand(inputDataFrame: pd.DataFrame, dataColumn):
-    data_frame=inputDataFrame[[dataColumn]]
+def add_bollinger_band(inputDataFrame: pd.DataFrame, dataColumn):
+    data_frame = inputDataFrame[[dataColumn]]
     # odhylenie standardowe dla 20 dni
     std_dev = data_frame.rolling(window=20).std()
     # średnia krącząca dla 20 dni
@@ -20,14 +19,13 @@ def add_BollingerBand(inputDataFrame: pd.DataFrame, dataColumn):
     upper_band = sma + 2 * std_dev
     upper_band = upper_band.rename(columns={dataColumn: "U-band"})
     data_frame = data_frame.join(upper_band).join(lower_band)
-    data_frame.drop([dataColumn],axis=1, inplace=True)
-
-    data_frame=data_frame.round(2)
+    data_frame.drop([dataColumn], axis=1, inplace=True)
+    data_frame = data_frame.round(2)
     outputDataFrame = inputDataFrame.join(data_frame)
-
     return outputDataFrame
 
-def get_Quotes(symbol, DateSET):
+
+def get_quotes(symbol, DateSET):
     FILENAME = symbol + ".txt"
     output_data_frame = pd.DataFrame()
     print(DateSET)
@@ -47,18 +45,19 @@ def get_Quotes(symbol, DateSET):
             else:
                 output_data_frame = pd.concat([output_data_frame, DF_notowania])
         except:
-            print("brak danych za okres ",symbol, START_DATE, END_DATE)
-            output_data_frame=pd.DataFrame()
+            print("brak danych za okres ", symbol, START_DATE, END_DATE)
+            output_data_frame = pd.DataFrame()
     return output_data_frame
 
-def get_symbol_list(FILENAME, column):
-    DF_symbolList=pd.read_csv(FILENAME, sep=';')
-    print(DF_symbolList)
-    symbolList=DF_symbolList[column].to_list()
 
+def get_symbol_list(FILENAME, column):
+    DF_symbolList = pd.read_csv(FILENAME, sep=';')
+    print(DF_symbolList)
+    symbolList = DF_symbolList[column].to_list()
     return symbolList
 
-def get_all_stooq(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base_mode='append' ):
+
+def get_all_stooq(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base_mode='append'):
     """ pobiera cały zestaw danych ze stooq
     to_csv - True(domyślnie)/False - zapis do pliku csv
     csv_mode - a= append (domyślnie), w=overwrite
@@ -67,52 +66,49 @@ def get_all_stooq(DateSET, to_csv=True, csv_mode='a', to_database=False, data_ba
     DateSET - zestaw dat start, end"""
     if os.path.exists('kursy.csv'):
         os.remove('kursy.csv')
-    #DateSET = [['2018-01-01', '2018-12-31'],
-    #           ['2019-01-01', '2019-12-31'],
-    #           ['2020-01-01', '2020-12-31'],
-    #           ['2021-01-01', '2021-12-31'],
-    #           ['2022-01-01', '2022-12-30']]
 
-    NAZWA_K='Kurs'
-    WALOR_LIST=get_symbol_list('gielda.csv','WALOR')
-
+    WALOR_LIST = get_symbol_list('gielda.csv', 'WALOR')
+    base_data_frame = pd.DataFrame()
     for WALOR in WALOR_LIST:
         NAZWA_K = WALOR
-        base_data_frame=pd.DataFrame()
-        base_data_frame=get_Quotes(NAZWA_K, DateSET)
-        base_data_frame=add_BollingerBand(base_data_frame,'Zamkniecie')
+        base_data_frame = pd.DataFrame()
+        base_data_frame = get_quotes(NAZWA_K, DateSET)
+        base_data_frame = add_bollinger_band(base_data_frame, 'Zamkniecie')
         if to_csv:
             base_data_frame.to_csv("kursy.csv", mode=csv_mode, encoding="utf-8")
-        #działa połączenie do bazy
+        # działa połączenie do bazy
 
         if to_database:
-            engine=sqlalchemy.create_engine('mssql+pymssql://adminuser:TjmnhdMySQL1!@pwserver2.database.windows.net:'
-                                            '1433/PWdatabase')
-            #działa - zapis do bazy
-            base_data_frame.to_sql('notowaniaGPW',if_exists=data_base_mode, con=engine)
+            engine = sqlalchemy.create_engine('mssql+pymssql://adminuser:TjmnhdMySQL1!@pwserver2.database.windows.net:'
+                                              '1433/PWdatabase')
+            # działa - zapis do bazy
+            base_data_frame.to_sql('notowaniaGPW', if_exists=data_base_mode, con=engine)
 
     print('Base data frame')
     print(base_data_frame)
     print(base_data_frame.dtypes)
 
+
 def plot_bollinger(base_data_frame, WALOR):
-    ax = base_data_frame[['Zamkniecie','U-band','L-band']].plot(title=WALOR)
-    ax.fill_between(base_data_frame.index,base_data_frame['L-band'], base_data_frame['U-band'], color='#5F9F9F', alpha=0.20)
+    ax = base_data_frame[['Zamkniecie', 'U-band', 'L-band']].plot(title=WALOR)
+    ax.fill_between(base_data_frame.index, base_data_frame['L-band'], base_data_frame['U-band'], color='#5F9F9F',
+                    alpha=0.20)
     ax.set_xlabel('Date')
     ax.set_ylabel('Kurs')
     ax.grid()
     plt.show(block=True)
 
-def get_data_range_of_currency(currency, start_date,end_date):
+
+def get_data_range_of_currency(currency, start_date, end_date):
     try:
-        url= f'http://api.nbp.pl/api/' \
-             f'exchangerates/rates/a/' \
-             f'{currency}/' \
-             f'{start_date}/' \
-             f'{end_date}' \
-             f'?format=json'
+        url = f'http://api.nbp.pl/api/' \
+              f'exchangerates/rates/a/' \
+              f'{currency}/' \
+              f'{start_date}/' \
+              f'{end_date}' \
+              f'?format=json'
         response = requests.get(url)
-        #print(url)
+        # print(url)
     except HTTPError as http_error:
         print(f'HTTP error: {http_error}')
     except Exception as e:
@@ -121,15 +117,16 @@ def get_data_range_of_currency(currency, start_date,end_date):
         if response.status_code == 200:
             return json.dumps(response.json(), indent=4, sort_keys=True)
 
-def get_data_range_of_GOLD(start_date,end_date):
+
+def get_data_range_of_GOLD(start_date, end_date):
     try:
-        url= f'http://api.nbp.pl/api/' \
-             f'cenyzlota/' \
-             f'{start_date}/' \
-             f'{end_date}' \
-             f'?format=json'
+        url = f'http://api.nbp.pl/api/' \
+              f'cenyzlota/' \
+              f'{start_date}/' \
+              f'{end_date}' \
+              f'?format=json'
         response = requests.get(url)
-        #print(url)
+        # print(url)
     except HTTPError as http_error:
         print(f'HTTP error: {http_error}')
     except Exception as e:
@@ -137,17 +134,13 @@ def get_data_range_of_GOLD(start_date,end_date):
     else:
         if response.status_code == 200:
             return json.dumps(response.json(), indent=4, sort_keys=True)
+
 
 def get_all_NBP(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base_mode='append'):
     dfCurrency = pd.DataFrame(columns=['effectiveDate', 'mid', 'no', 'code'])
     dfGOLD = pd.DataFrame(columns=['data', 'cena'])
     currencySET = ['USD', 'GBP', 'EUR', 'CHF']
-    #DateSET = [['2018-01-01', '2018-12-31'],
-    #           ['2019-01-01', '2019-12-31'],
-    #           ['2020-01-01', '2020-12-31'],
-    #           ['2021-01-01', '2021-12-31'],
-    #           ['2022-01-01', '2022-12-12']]
-    print(DateSET)
+    # print(DateSET)
     for start, end in DateSET:
         print('dekodowanie', start, end, 'GOLD')
         jsonGOLD = json.loads(get_data_range_of_GOLD(start, end))
@@ -160,7 +153,7 @@ def get_all_NBP(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base
         for start, end in DateSET:
             jsonNBP = json.loads(get_data_range_of_currency(currency, start, end))
             print("dekodowanie", start, end, currency)
-            Rrates = ((jsonNBP['rates']))
+            Rrates = (jsonNBP['rates'])
 
             for RatesDict in Rrates:
                 dRatesDict = dict(RatesDict)
@@ -174,13 +167,13 @@ def get_all_NBP(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base
     print(dfGOLD)
     if to_csv:
         dfGOLD.to_csv("gold.csv", mode=csv_mode, encoding="utf-8")
-        dfCurrency.to_csv("currency.csv",mode=csv_mode, encoding="utf-8")
+        dfCurrency.to_csv("currency.csv", mode=csv_mode, encoding="utf-8")
         print("to_csv done")
     # działa połączenie do bazy
     if to_database:
         engine = sqlalchemy.create_engine('mssql+pymssql://adminuser:TjmnhdMySQL1!@pwserver2.database.windows.net:'
                                           '1433/PWdatabase')
-    # działa - zapis do bazy
+        # działa - zapis do bazy
         dfGOLD.to_sql('GOLD', index=False, if_exists=data_base_mode, con=engine)
         dfCurrency.to_sql('Currency', index=False, if_exists=data_base_mode, con=engine)
 
@@ -191,6 +184,5 @@ DateSET = [['2018-01-01', '2018-12-31'],
            ['2021-01-01', '2021-12-31'],
            ['2022-01-01', '2022-12-31']]
 
-#DateSET = [['2022-12-30', '2022-12-30']]
-
+# DateSET = [['2022-12-30', '2022-12-30']]
 get_all_stooq(DateSET, to_csv=True, csv_mode='w', to_database=True, data_base_mode='append')
