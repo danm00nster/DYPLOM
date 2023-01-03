@@ -136,7 +136,7 @@ def get_data_range_of_GOLD(start_date, end_date):
             return json.dumps(response.json(), indent=4, sort_keys=True)
 
 
-def get_all_NBP(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base_mode='append'):
+def get_all_nbp(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base_mode='append'):
     dfCurrency = pd.DataFrame(columns=['effectiveDate', 'mid', 'no', 'code'])
     dfGOLD = pd.DataFrame(columns=['data', 'cena'])
     currencySET = ['USD', 'GBP', 'EUR', 'CHF']
@@ -186,3 +186,4 @@ DateSET = [['2018-01-01', '2018-12-31'],
 
 # DateSET = [['2022-12-30', '2022-12-30']]
 get_all_stooq(DateSET, to_csv=True, csv_mode='w', to_database=True, data_base_mode='append')
+get_all_nbp(DateSET,to_csv=True, csv_mode='w', to_database=True, data_base_mode='append')
