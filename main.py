@@ -57,17 +57,18 @@ def get_symbol_list(FILENAME, column):
     return symbolList
 
 
-def get_all_stooq(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base_mode='append'):
+def get_all_stooq(DateSET, WALOR_LIST, to_csv=True, csv_mode='a', to_database=False, data_base_mode='append'):
     """ pobiera cały zestaw danych ze stooq
-    to_csv - True(domyślnie)/False - zapis do pliku csv
-    csv_mode - a= append (domyślnie), w=overwrite
+    DateSET - zestaw dat start, end
+    to_csv - True (domyślnie) /False - zapis do pliku csv
+    csv_mode - a= append (domyślnie), w=write
     to_database_ True/False(domyślnie) - zapis do bazy danych
-    data_base_mode - opcje dataframe.to_sql append= wstawia wiersze(domyślnie), replace=drop table przed zapisem do bazy
-    DateSET - zestaw dat start, end"""
+    data_base_mode - wartości jak w dataframe.to_sql append= wstawia wiersze(domyślnie), replace=drop table przed zapisem do bazy
+    """
     if os.path.exists('kursy.csv'):
         os.remove('kursy.csv')
-
-    WALOR_LIST = get_symbol_list('gielda.csv', 'WALOR')
+    csv_header=True
+    #WALOR_LIST = get_symbol_list('gielda.csv', 'WALOR')
     base_data_frame = pd.DataFrame()
     for WALOR in WALOR_LIST:
         NAZWA_K = WALOR
@@ -75,8 +76,9 @@ def get_all_stooq(DateSET, to_csv=True, csv_mode='a', to_database=False, data_ba
         base_data_frame = get_quotes(NAZWA_K, DateSET)
         base_data_frame = add_bollinger_band(base_data_frame, 'Zamkniecie')
         if to_csv:
-            base_data_frame.to_csv("kursy.csv", mode=csv_mode, encoding="utf-8")
+            base_data_frame.to_csv("kursy.csv", mode=csv_mode, encoding="utf-8", sep=';', header=csv_header)
             csv_mode='a'
+            csv_header=False
 
         if to_database:
             engine = sqlalchemy.create_engine('mssql+pymssql://adminuser:TjmnhdMySQL1!@pwserver2.database.windows.net:'
@@ -176,6 +178,9 @@ def get_all_nbp(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base
         dfCurrency.to_sql('Currency', index=False, if_exists=data_base_mode, con=engine)
 
 
+
+WALOR_LIST = get_symbol_list('gielda.csv', 'WALOR')
+
 DateSET = [['2018-01-01', '2018-12-31'],
            ['2019-01-01', '2019-12-31'],
            ['2020-01-01', '2020-12-31'],
@@ -183,5 +188,5 @@ DateSET = [['2018-01-01', '2018-12-31'],
            ['2022-01-01', '2022-12-31']]
 
 # DateSET = [['2022-12-30', '2022-12-30']]
-get_all_stooq(DateSET, to_csv=True, csv_mode='w', to_database=True, data_base_mode='append')
-get_all_nbp(DateSET,to_csv=True, csv_mode='w', to_database=True, data_base_mode='append')
+get_all_stooq(DateSET, WALOR_LIST, to_csv=True, csv_mode='w', to_database=False, data_base_mode='append')
+get_all_nbp(DateSET,to_csv=True, csv_mode='w', to_database=False, data_base_mode='append')
