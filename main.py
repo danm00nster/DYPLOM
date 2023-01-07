@@ -24,7 +24,6 @@ def add_bollinger_band(inputDataFrame: pd.DataFrame, dataColumn):
     outputDataFrame = inputDataFrame.join(data_frame)
     return outputDataFrame
 
-
 def get_quotes(symbol, DateSET):
     FILENAME = symbol + ".txt"
     output_data_frame = pd.DataFrame()
@@ -140,7 +139,7 @@ def get_data_range_of_GOLD(start_date, end_date):
 def get_all_nbp(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base_mode='append'):
     dfCurrency = pd.DataFrame(columns=['effectiveDate', 'mid', 'no', 'code'])
     dfGOLD = pd.DataFrame(columns=['data', 'cena'])
-    currencySET = ['USD', 'GBP', 'EUR', 'CHF']
+    currencySET = ['USD', 'GBP', 'EUR', 'CHF','JPY']
     # print(DateSET)
     for start, end in DateSET:
         print('dekodowanie', start, end, 'GOLD')
@@ -179,7 +178,7 @@ def get_all_nbp(DateSET, to_csv=True, csv_mode='a', to_database=False, data_base
 
 
 
-WALOR_LIST = get_symbol_list('gielda.csv', 'WALOR')
+WALOR_LIST = get_symbol_list('gielda2.csv', 'WALOR')
 
 DateSET = [['2018-01-01', '2018-12-31'],
            ['2019-01-01', '2019-12-31'],
@@ -188,5 +187,5 @@ DateSET = [['2018-01-01', '2018-12-31'],
            ['2022-01-01', '2022-12-31']]
 
 # DateSET = [['2022-12-30', '2022-12-30']]
-get_all_stooq(DateSET, WALOR_LIST, to_csv=True, csv_mode='w', to_database=False, data_base_mode='append')
-get_all_nbp(DateSET,to_csv=True, csv_mode='w', to_database=False, data_base_mode='append')
+get_all_stooq(DateSET, WALOR_LIST, to_csv=True, csv_mode='w', to_database=True, data_base_mode='append')
+get_all_nbp(DateSET,to_csv=True, csv_mode='w', to_database=False, data_base_mode='replace')
