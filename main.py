@@ -10,9 +10,7 @@ from requests.exceptions import HTTPError
 
 def add_bollinger_band(inputDataFrame: pd.DataFrame, dataColumn):
     data_frame = inputDataFrame[[dataColumn]]
-    # odhylenie standardowe dla 20 dni
     std_dev = data_frame.rolling(window=20).std()
-    # średnia krącząca dla 20 dni
     sma = data_frame.rolling(window=20).mean()
     lower_band = sma - 2 * std_dev
     lower_band = lower_band.rename(columns={dataColumn: "L-band"})
