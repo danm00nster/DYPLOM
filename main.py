@@ -9,6 +9,9 @@ from requests.exceptions import HTTPError
 
 
 def add_bollinger_band(input_dataframe: pd.DataFrame, data_column):
+    """ dodaje pola L-band i U-band do dataframe przekazanego do funkcji
+        input_dataframe - dane wejściowe,
+        data_column - kolumna zawierająca dane do obliczeń"""
     data_frame = input_dataframe[[data_column]]
     std_dev = data_frame.rolling(window=20).std()
     sma = data_frame.rolling(window=20).mean()
@@ -24,6 +27,10 @@ def add_bollinger_band(input_dataframe: pd.DataFrame, data_column):
 
 
 def get_quotes(symbol, date_set):
+    """ pobiera notowania giełdowe z serwisu stooq.pl
+        symbol - ticker dla którego pobierane są dane
+        date_set - zestaw dat w postaci tupli data początkowa, data końcowa.
+        maksymalny jednorazowy przedział to 12 miesięcy"""
     filename = symbol + ".txt"
     output_data_frame = pd.DataFrame()
     print(date_set)
