@@ -29,7 +29,7 @@ def add_bollinger_band(input_dataframe: pd.DataFrame, data_column):
 def get_quotes(symbol, date_set):
     """ pobiera notowania giełdowe z serwisu stooq.pl
         symbol - ticker dla którego pobierane są dane
-        date_set - zestaw dat w postaci tupli data początkowa, data końcowa.
+        date_set - zestaw dat [data początkowa, data końcowa].
         maksymalny jednorazowy przedział to 12 miesięcy"""
     filename = symbol + ".txt"
     output_data_frame = pd.DataFrame()
